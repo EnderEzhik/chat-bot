@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
+from src.api.routes import auth, chat
+
 
 app = FastAPI()
 
@@ -13,26 +15,5 @@ async def index():
     return RedirectResponse("/static/index.html")
 
 
-@app.post("/auth/register")
-async def register():
-    pass
-
-
-@app.post("/auth/login")
-async def login():
-    pass
-
-
-@app.post("/chat/message")
-async def handle_message():
-    pass
-
-
-@app.get("/chat/history/{session_id}")
-async def get_messages_history():
-    pass
-
-
-@app.post("/chat/session")
-async def create_session():
-    pass
+app.include_router(auth.router)
+app.include_router(chat.router)
