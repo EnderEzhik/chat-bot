@@ -3,3 +3,6 @@ uvicorn
 sqlalchemy
 aiosqlite
 alembic
+pyjwt
+pwdlib[argon2]
+python-multipart

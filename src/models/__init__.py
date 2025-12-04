@@ -6,6 +6,3 @@ class Base(DeclarativeBase):
 
 
 from src.models.user import User
-
-
-__all__ = ["Base", "User"]
