@@ -6,3 +6,5 @@ class Base(DeclarativeBase):
 
 
 from src.models.user import User
+from src.models.session import Session
+from src.models.message import Message
