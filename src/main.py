@@ -12,7 +12,7 @@ app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
 @app.get("/")
 async def index():
-    return RedirectResponse("/static/index.html")
+    return RedirectResponse("static/index.html")
 
 
 app.include_router(auth.router)
