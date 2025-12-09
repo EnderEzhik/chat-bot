@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.message import Message, MessageCreate
@@ -14,3 +14,8 @@ async def get_messages_by_session_id(session: AsyncSession, session_id: str):
     result = await session.execute(select(Message).where(Message.session_id == session_id))
     messages = result.scalars().all()
     return messages
+
+
+async def delete_messages_by_session_id(session: AsyncSession, session_id: str) -> int:
+    await session.execute(delete(Message).where(Message.session_id == session_id))
+    await session.commit()

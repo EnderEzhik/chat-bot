@@ -67,12 +67,23 @@ function handleSendMessage() {
 }
 
 function clearChatHistory() {
-    //TODO: добавить логику удаления записей из бд при очистке чата
     if (isTyping) {
         isTyping = false;
         typingIndicator.style.display = "none";
     }
 
+    chatMessages.innerHTML = "";
+
+    const token = localStorage.getItem("token");
+    const session_id = sessionStorage.getItem("session_id");
+    fetch(`/chat/history/${session_id}`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    addMessage(helloMessage, false);
     sendMessage(helloMessage, false);
 }
 

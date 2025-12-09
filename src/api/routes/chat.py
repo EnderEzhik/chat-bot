@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from src.api.deps import CurrentUser, SessionDep
 from src.models.message import MessageCreate, MessageOut
 from src.repositories.sessions import create_session, get_session
-from src.repositories.messages import save_message, get_messages_by_session_id
+from src.repositories.messages import save_message, get_messages_by_session_id, delete_messages_by_session_id
 from src.services import bot
 
 
@@ -36,3 +36,9 @@ async def get_messages_history(_: CurrentUser, session: SessionDep, session_id: 
     _ = await get_session(session, session_id)
     messages = await get_messages_by_session_id(session, session_id)
     return messages
+
+
+@router.delete("/history/{session_id}")
+async def delete_messages_history(_: CurrentUser, session: SessionDep, session_id: str):
+    _ = await get_session(session, session_id)
+    await delete_messages_by_session_id(session, session_id)
