@@ -99,6 +99,21 @@ async function createSession() {
     sessionStorage.setItem("session_id", session_id)
 }
 
+async function loadSessionHistory(session_id) {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`/chat/history/${session_id}`, {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+        }
+    });
+    const messages = await response.json();
+    Array.from(messages).forEach(message => {
+        addMessage(message.text, message.sender_type == "user" ? true : false);
+    });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -109,10 +124,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const session_id = sessionStorage.getItem("session_id");
     if (!session_id) {
         await createSession();
+        addMessage(helloMessage, false);
+        sendMessage(helloMessage, false);
     }
-
-    addMessage(helloMessage, false);
-    sendMessage(helloMessage, false);
+    else {
+        await loadSessionHistory(session_id);
+    }
 });
 
 document.getElementById("authForm").addEventListener("submit", async function(e) {
