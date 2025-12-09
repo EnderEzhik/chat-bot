@@ -19,10 +19,15 @@ async def session(current_user: CurrentUser, session: SessionDep):
 @router.post("/message", status_code=201)
 async def handle_message(_: CurrentUser, session: SessionDep, message_create: MessageCreate):
     _ = await get_session(session, message_create.session_id)
+
     await save_message(session, message_create)
+    if message_create.sender_type == "bot":
+        return
+
     bot_answer = bot.get_bot_answer(message_create.text)
     bot_message_create = MessageCreate(session_id=message_create.session_id, sender_type="bot", text=bot_answer)
     await save_message(session, bot_message_create)
+
     return bot_answer
 
 

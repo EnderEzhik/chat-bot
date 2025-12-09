@@ -5,4 +5,4 @@ DATABASE_ASYNC = "sqlite+aiosqlite:///db.db"
 DATABASE_SYNC = "sqlite:///db.db"
 
 engine = create_async_engine(url=DATABASE_ASYNC, echo=True)
-SessionMaker = async_sessionmaker(bind=engine, expire_on_commit=False)
+AsyncSessionMaker = async_sessionmaker(bind=engine, expire_on_commit=False)

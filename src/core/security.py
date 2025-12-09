@@ -2,8 +2,6 @@ import jwt
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi.security import OAuth2PasswordBearer
-
 from pwdlib import PasswordHash
 
 
@@ -13,8 +11,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 password_hash = PasswordHash.recommended()
-
-oauth_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def get_password_hash(password: str) -> str:

@@ -9,9 +9,7 @@ let isTyping = false;
 const userAvatar = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
 const botAvatar = "https://cdn-icons-png.flaticon.com/512/4712/4712039.png";
 
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzY1MTEyOTAxfQ.tFIipR5lu8Wi0Yx5rDuuUCU9DnRnZIytcf07uOWKtcg";
-
-const helloMessage = "Привет! Я простой бот. Спроси меня о чём-нибудь.";
+const helloMessage = "Привет! Я простой бот. Спроси меня о чём-нибудь."; //TODO: заменить на тех поодержку солнца
 
 function addMessage(text, isUser) {
     const messageDiv = document.createElement("div");
@@ -26,7 +24,10 @@ function addMessage(text, isUser) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function sendMessage(userText, isUser) {
+function sendMessage(text, isUser) {
+    const token = localStorage.getItem("token");
+    const session_id = sessionStorage.getItem("session_id");
+
     fetch("/chat/message", {
         method: "POST",
         headers: {
@@ -34,16 +35,18 @@ function sendMessage(userText, isUser) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            "session_id": sessionStorage.getItem("session_id"),
+            "session_id": session_id,
             "sender_type": isUser ? "user" : "bot",
-            "text": userText
+            "text": text
         })
     })
     .then(data => data.json())
     .then(botAnswer => {
         isTyping = false;
         typingIndicator.style.display = "none";
-        addMessage(botAnswer);
+        if (isUser) {
+            addMessage(botAnswer);
+        }
     });
 }
 
@@ -55,27 +58,22 @@ function handleSendMessage() {
     }
 
     addMessage(userText, true);
+    sendMessage(userText, true);
     userInput.value = "";
 
     isTyping = true;
     typingIndicator.style.display = "flex";
     chatMessages.scrollTop = chatMessages.scrollHeight;
-
-
 }
 
 function clearChatHistory() {
+    //TODO: добавить логику удаления записей из бд при очистке чата
     if (isTyping) {
-        istyping = false;
+        isTyping = false;
         typingIndicator.style.display = "none";
     }
 
-    const welcomeMessage = chatMessages.querySelector(".bot-message");
-    chatMessages.innerHTML = "";
-
-    if (welcomeMessage) {
-        chatMessages.appendChild(welcomeMessage);
-    }
+    sendMessage(helloMessage, false);
 }
 
 sendButton.addEventListener("click", handleSendMessage);
@@ -88,48 +86,238 @@ userInput.addEventListener("keypress", (e) => {
 
 clearChatButton.addEventListener("click", clearChatHistory)
 
-function createSession(token) {
-    fetch("/chat/session", {
+async function createSession() {
+    const token = localStorage.getItem("token");
+    const response = await fetch("/chat/session", {
+        method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`
         }
-    })
+    });
+    const json = await response.json();
+    const session_id = json["id"];
+    sessionStorage.setItem("session_id", session_id)
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("authOverlay").style.display = "flex";
-    addMessage(helloMessage, false);
-    // const session_id = sessionStorage.getItem("session_id");
-    // if (!session_id) {
+document.addEventListener("DOMContentLoaded", async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        document.getElementById("authOverlay").style.display = "flex";
+        return;
+    }
 
-    // }
+    const session_id = sessionStorage.getItem("session_id");
+    if (!session_id) {
+        await createSession();
+    }
+
+    addMessage(helloMessage, false);
+    sendMessage(helloMessage, false);
 });
 
-// Обработка формы авторизации
-document.getElementById("authForm").addEventListener("submit", function(e) {
+document.getElementById("authForm").addEventListener("submit", async function(e) {
     e.preventDefault();
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
-    // Здесь будет логика входа
-    console.log("Вход с данными:", { username, password });
+    clearErrors();
 
-    // Скрываем попап после входа (для демо)
-    document.getElementById("authOverlay").style.display = "none";
+    try {
+        const response = await fetch("/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "username": username,
+                "password": password
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+
+            if (response.status === 422) {
+                displayValidationErrors(errorData.detail);
+                return;
+            } else if (response.status === 401) {
+                displayError("Неправильный логин или пароль");
+                return;
+            } else {
+                displayError(`Ошибка сервера: ${response.status}`);
+                return;
+            }
+        }
+
+        const json = await response.json();
+        localStorage.setItem("token", json.access_token);
+
+        await createSession();
+
+        document.getElementById("authOverlay").style.display = "none";
+
+        addMessage(helloMessage, false);
+        sendMessage(helloMessage, false);
+    }
+    catch (error) {
+        console.error("Ошибка:", error);
+        displayError("Произошла ошибка при подключении к серверу");
+    }
 });
 
-// Обработка кнопки регистрации
-document.getElementById("registerBtn").addEventListener("click", function() {
+// Функция для отображения ошибок валидации
+function displayValidationErrors(errors) {
+    errors.forEach(error => {
+        const fieldName = error.loc[error.loc.length - 1]; // Получаем имя поля
+        const errorMessage = getErrorMessage(error.msg, fieldName);
+
+        // Находим соответствующее поле ввода
+        const inputField = document.getElementById(fieldName);
+        if (inputField) {
+            // Добавляем CSS класс для подсветки ошибки
+            inputField.classList.add("error");
+
+            // Создаем элемент с сообщением об ошибке
+            const errorElement = document.createElement("div");
+            errorElement.className = "error-message";
+            errorElement.textContent = errorMessage;
+            errorElement.style.color = "#dc3545";
+            errorElement.style.fontSize = "0.85rem";
+            errorElement.style.marginTop = "5px";
+
+            // Вставляем после поля ввода
+            inputField.parentNode.appendChild(errorElement);
+        } else {
+            // Если не нашли конкретное поле, показываем общую ошибку
+            displayError(errorMessage);
+        }
+    });
+}
+
+// Функция для преобразования сообщений об ошибках в понятный текст
+function getErrorMessage(msg, fieldName) {
+    const fieldNames = {
+        "username": "логин",
+        "password": "пароль"
+    };
+
+    const fieldDisplayName = fieldNames[fieldName] || fieldName;
+
+    if (msg.includes("min_length")) {
+        if (fieldName === "username") {
+            return `Логин должен содержать минимум 4 символа`;
+        } else if (fieldName === "password") {
+            return `Пароль должен содержать минимум 6 символов`;
+        }
+    }
+
+    if (msg.includes("max_length")) {
+        if (fieldName === "username") {
+            return `Логин должен содержать не более 20 символов`;
+        } else if (fieldName === "password") {
+            return `Пароль должен содержать не более 32 символов`;
+        }
+    }
+
+    if (msg.includes("string")) {
+        return `Поле "${fieldDisplayName}" должно быть строкой`;
+    }
+
+    return `Ошибка в поле "${fieldDisplayName}": ${msg}`;
+}
+
+// Функция для отображения общей ошибки
+function displayError(message) {
+    // Можно добавить блок для общих ошибок
+    const errorContainer = document.createElement("div");
+    errorContainer.className = "global-error";
+    errorContainer.textContent = message;
+    errorContainer.style.color = "#dc3545";
+    errorContainer.style.backgroundColor = "#f8d7da";
+    errorContainer.style.border = "1px solid #f5c6cb";
+    errorContainer.style.borderRadius = "4px";
+    errorContainer.style.padding = "10px";
+    errorContainer.style.margin = "10px 0";
+    errorContainer.style.textAlign = "center";
+
+    // Вставляем перед формой
+    const form = document.getElementById("authForm");
+    form.parentNode.insertBefore(errorContainer, form);
+}
+
+// Функция для очистки всех ошибок
+function clearErrors() {
+    // Удаляем все сообщения об ошибках
+    document.querySelectorAll(".error-message, .global-error").forEach(el => el.remove());
+
+    // Убираем класс ошибки с полей ввода
+    document.querySelectorAll(".error").forEach(el => el.classList.remove("error"));
+}
+
+// Обработка кнопки регистрации (аналогично с другим эндпоинтом)
+document.getElementById("registerBtn").addEventListener("click", async function() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
-    // Здесь будет логика регистрации
-    console.log("Регистрация с данными:", { username, password });
+    // Сброс предыдущих ошибок
+    clearErrors();
 
-    // Скрываем попап после регистрации (для демо)
-    document.getElementById("authOverlay").style.display = "none";
+    try {
+        const response = await fetch("/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "username": username,
+                "password": password
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+
+            if (response.status === 422) {
+                // Ошибки валидации Pydantic
+                displayValidationErrors(errorData.detail);
+                return;
+            } else if (response.status === 400) {
+                // Пользователь уже существует (пример)
+                displayError("Пользователь с таким логином уже существует");
+                return;
+            } else {
+                displayError(`Ошибка сервера: ${response.status}`);
+                return;
+            }
+        }
+
+        const json = await response.json();
+        // Возможно сохранить токен или показать сообщение об успехе
+        displaySuccess("Регистрация успешна! Теперь вы можете войти.");
+
+    } catch (error) {
+        console.error("Ошибка:", error);
+        displayError("Произошла ошибка при подключении к серверу");
+    }
 });
 
-// Для демонстрации - открываем попап при загрузке
-document.addEventListener("DOMContentLoaded", function() {
-});
+// Функция для отображения успешного сообщения
+function displaySuccess(message) {
+    const successContainer = document.createElement("div");
+    successContainer.className = "global-success";
+    successContainer.textContent = message;
+    successContainer.style.color = "#155724";
+    successContainer.style.backgroundColor = "#d4edda";
+    successContainer.style.border = "1px solid #c3e6cb";
+    successContainer.style.borderRadius = "4px";
+    successContainer.style.padding = "10px";
+    successContainer.style.margin = "10px 0";
+    successContainer.style.textAlign = "center";
+
+    const form = document.getElementById("authForm");
+    form.parentNode.insertBefore(successContainer, form);
+
+    setTimeout(() => {
+        successContainer.remove();
+    }, 3000);
+}

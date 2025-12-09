@@ -1,39 +1,48 @@
-from fastapi import HTTPException
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models.user import User, UserCreate, User
-from src.core.security import get_password_hash
-
-
-async def is_username_free(session: AsyncSession, new_username: str) -> bool:
-    result = await session.execute(select(User).where(User.username == new_username))
-    return result.scalar_one_or_none() is None
-
-
-async def get_user(session: AsyncSession, user_id: int) -> User:
-    user = await session.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-
-async def get_user_by_username(session: AsyncSession, username: str) -> User | None:
-    user = (await session.execute(select(User).where(User.username == username))).scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+from src.core.security import get_password_hash, verify_password
+from src.models.user import User, UserCreate, UserUpdate
 
 
 async def create_user(session: AsyncSession, user_create: UserCreate) -> User:
-    username_is_free = await is_username_free(session, user_create.username)
-    if not username_is_free:
-        raise HTTPException(status_code=400, detail=f"Username is already in use")
-
+    user_data = user_create.model_dump(exclude={"password"})
     hashed_password = get_password_hash(user_create.password)
-    new_user = User(username=user_create.username, hashed_password=hashed_password)
+    new_user = User(**user_data, hashed_password=hashed_password)
     session.add(new_user)
     await session.commit()
-    await session.refresh(new_user)
     return new_user
+
+
+async def update_user(session: AsyncSession, user_db: User, user_update: UserUpdate) -> User:
+    user_data = user_update.model_dump(exclude_unset=True)
+    if "password" in user_data:
+        new_password = user_data.pop("password")
+        user_db.hashed_password = get_password_hash(new_password)
+    for key, value in user_data.items():
+        setattr(user_db, key, value)
+
+    session.add(user_db)
+    await session.commit()
+    return user_db
+
+
+async def get_user_by_username(session: AsyncSession, username: str) -> User | None:
+    query = select(User).where(User.username == username)
+    result = await session.execute(query)
+    user = result.scalar_one_or_none()
+    return user
+
+
+async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
+    user = await session.get(User, user_id)
+    return user
+
+
+async def authenticate(session: AsyncSession, username: str, password: str) -> User | None:
+    user = await get_user_by_username(session, username)
+    if not user:
+        return None
+    if not verify_password(password, user.hashed_password):
+        return None
+    return user
