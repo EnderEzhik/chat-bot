@@ -16,7 +16,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 async def register(session: SessionDep, user_create: UserCreate):
     user = await user_repo.get_user_by_username(session, user_create.username)
     if user:
-        raise HTTPException(status_code=404, detail="Username is already in use")
+        raise HTTPException(status_code=400, detail="Username is already in use")
     await user_repo.create_user(session, user_create)
 
 

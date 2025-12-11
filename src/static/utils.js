@@ -1,0 +1,95 @@
+export async function sendRequest(path, method, headers, body=null) {
+    try {
+        const response = await fetch(path, {
+            method: method,
+            headers: headers,
+            body: JSON.stringify(body)
+        });
+
+        if (response.ok) {
+            return response;
+        }
+
+        switch (response.status) {
+            case 400:
+                displayError("Пользователь с таким логин уже существует");
+                break;
+            case 401:
+                displayError("Неверный логин или пароль");
+                break;
+            case 422:
+                const errorData = await response.json();
+                displayValidationErrors(errorData.detail);
+                break;
+            default:
+                break;
+        }
+        return;
+    }
+    catch (error) {
+        console.log(`Ошибка: ${error}`);
+        displayError("Ошибка подключения к серверу");
+    }
+}
+
+function displayError(message) {
+    const errorContainer = document.createElement("div");
+    errorContainer.className = "global-error";
+    errorContainer.textContent = message;
+
+    const form = document.getElementById("authForm");
+    form.parentNode.insertBefore(errorContainer, form);
+}
+
+function displayValidationErrors(errors) {
+    errors.forEach(error => {
+        const fieldName = error.loc[error.loc.length - 1];
+        const errorMessage = getErrorMessage(error.type, error.msg, fieldName);
+
+        const inputField = document.getElementById(fieldName);
+        if (inputField) {
+            inputField.classList.add("error");
+
+            const errorElement = document.createElement("div");
+            errorElement.className = "error-message";
+            errorElement.textContent = errorMessage;
+
+            inputField.parentNode.appendChild(errorElement);
+        } else {
+            displayError(errorMessage);
+        }
+    });
+}
+
+function getErrorMessage(type, msg, fieldName) {
+    const fieldNames = {
+        "username": "логин",
+        "password": "пароль"
+    };
+
+    const fieldDisplayName = fieldNames[fieldName] || fieldName;
+
+    if (type === "string_too_short") {
+        if (fieldName === "username") {
+            return "Логин должен содержать минимум 4 символа";
+        }
+        else if (fieldName === "password") {
+            return "Пароль должен содержать минимум 6 символов";
+        }
+    }
+    else if (type === "string_too_long") {
+        if (fieldName === "username") {
+            return "Логин должен содержать не более 20 символов";
+        }
+        else if (fieldName === "password") {
+            return "Пароль должен содержать не более 32 символов";
+        }
+    }
+
+    return `Ошибка в поле "${fieldDisplayName}": ${msg}`;
+}
+
+export function clearErrors() {
+    document.querySelectorAll(".error-message, .global-error").forEach(el => el.remove());
+    document.querySelectorAll(".error").forEach(el => el.classList.remove("error"));
+}

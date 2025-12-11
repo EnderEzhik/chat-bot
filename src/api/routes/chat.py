@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 
+from asyncio import sleep
+
 from src.api.deps import CurrentUser, SessionDep
 from src.models.message import MessageCreate, MessageOut
 from src.repositories.sessions import create_session, get_session
@@ -28,7 +30,9 @@ async def handle_message(_: CurrentUser, session: SessionDep, message_create: Me
     bot_message_create = MessageCreate(session_id=message_create.session_id, sender_type="bot", text=bot_answer)
     await save_message(session, bot_message_create)
 
-    return bot_answer
+    await sleep(2)
+
+    return { "answer": bot_answer }
 
 
 @router.get("/history/{session_id}", response_model=list[MessageOut])
