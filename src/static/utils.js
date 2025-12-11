@@ -93,3 +93,16 @@ export function clearErrors() {
     document.querySelectorAll(".error-message, .global-error").forEach(el => el.remove());
     document.querySelectorAll(".error").forEach(el => el.classList.remove("error"));
 }
+
+export function displaySuccess(message) {
+    const successContainer = document.createElement("div");
+    successContainer.className = "global-success";
+    successContainer.textContent = message;
+
+    const form = document.getElementById("authForm");
+    form.parentNode.insertBefore(successContainer, form);
+
+    setTimeout(() => {
+        successContainer.remove();
+    }, 3000);
+}

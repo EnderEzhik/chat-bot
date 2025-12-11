@@ -1,4 +1,4 @@
-import { sendRequest, clearErrors } from "./utils.js";
+import { sendRequest, clearErrors, displaySuccess } from "./utils.js";
 
 const userAvatar = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
 const botAvatar = "https://cdn-icons-png.flaticon.com/512/4712/4712039.png";
@@ -206,28 +206,5 @@ document.getElementById("registerBtn").addEventListener("click", async function(
 
     if (!response) return;
 
-    const data = await response.json();
-    localStorage.setItem("token", data.access_token);
-
     displaySuccess("Регистрация прошла успешна!");
 });
-
-function displaySuccess(message) {
-    const successContainer = document.createElement("div");
-    successContainer.className = "global-success";
-    successContainer.textContent = message;
-    successContainer.style.color = "#155724";
-    successContainer.style.backgroundColor = "#d4edda";
-    successContainer.style.border = "1px solid #c3e6cb";
-    successContainer.style.borderRadius = "4px";
-    successContainer.style.padding = "10px";
-    successContainer.style.margin = "10px 0";
-    successContainer.style.textAlign = "center";
-
-    const form = document.getElementById("authForm");
-    form.parentNode.insertBefore(successContainer, form);
-
-    setTimeout(() => {
-        successContainer.remove();
-    }, 3000);
-}
