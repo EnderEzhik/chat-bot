@@ -1,4 +1,4 @@
-import { sendRequest, clearErrors, displaySuccess } from "./utils.js";
+import { clearErrors, displaySuccess, handleTokenExpired, displayError, displayValidationErrors } from "./utils.js";
 
 const userAvatar = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
 const botAvatar = "https://cdn-icons-png.flaticon.com/512/4712/4712039.png";
@@ -30,35 +30,45 @@ async function sendMessage(text, isUser) {
     const token = localStorage.getItem("token");
     const session_id = sessionStorage.getItem("session_id");
 
-    const requestPath = "/chat/message";
-    const requestMethod = "POST";
-    const requestHeaders = {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-    };
-    const requestBody = {
-            "session_id": session_id,
-            "sender_type": isUser ? "user" : "bot",
-            "text": text
-    };
+    try {
+        const response = await fetch("/chat/message", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "session_id": session_id,
+                "sender_type": isUser ? "user" : "bot",
+                "text": text
+            })
+        });
 
-    const response = await sendRequest(requestPath, requestMethod, requestHeaders, requestBody);
+        if (!response.ok) {
+            if (response.status === 401) {
+                handleTokenExpired();
+            }
+            if (isTyping) {
+                isTyping = false;
+                typingIndicator.style.display = "none";
+            }
+            return;
+        }
 
-    if (!response) {
         if (isTyping) {
             isTyping = false;
             typingIndicator.style.display = "none";
+
+            if (isUser) {
+                const json = await response.json();
+                addMessage(json.answer);
+            }
         }
-        return;
-    }
-
-    if (isTyping) {
-        isTyping = false;
-        typingIndicator.style.display = "none";
-
-        if (isUser) {
-            const json = await response.json();
-            addMessage(json.answer)
+    } catch (error) {
+        console.error("Ошибка при отправке сообщения:", error);
+        if (isTyping) {
+            isTyping = false;
+            typingIndicator.style.display = "none";
         }
     }
 }
@@ -91,62 +101,80 @@ async function clearChatHistory() {
     const token = localStorage.getItem("token");
     const session_id = sessionStorage.getItem("session_id");
 
-    const requestPath = `/chat/history/${session_id}`;
-    const requestMethod = "DELETE";
-    const requestHeaders = {
-            "Authorization": `Bearer ${token}`
-    };
+    try {
+        const response = await fetch(`/chat/history/${session_id}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
 
-    const response = await sendRequest(requestPath, requestMethod, requestHeaders);
+        if (!response.ok) {
+            if (response.status === 401) {
+                handleTokenExpired();
+            }
+            return;
+        }
 
-    if (!response) {
-        return;
+        addMessage(helloMessage, false);
+        await sendMessage(helloMessage, false);
+    } catch (error) {
+        console.error("Ошибка при очистке истории:", error);
     }
-
-    addMessage(helloMessage, false);
-    await sendMessage(helloMessage, false);
 }
 
 async function createSession() {
     const token = localStorage.getItem("token");
 
-    const requestPath = "/chat/session";
-    const requestMethod = "POST";
-    const requestHeaders = {
-        "Authorization": `Bearer ${token}`
-    };
+    try {
+        const response = await fetch("/chat/session", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
 
-    const response = await sendRequest(requestPath, requestMethod, requestHeaders);
+        if (!response.ok) {
+            if (response.status === 401) {
+                handleTokenExpired();
+            }
+            return;
+        }
 
-    if (!response) {
-        return;
+        const data = await response.json();
+        const session_id = data["id"];
+        sessionStorage.setItem("session_id", session_id);
+    } catch (error) {
+        console.error("Ошибка при создании сессии:", error);
     }
-
-    const data = await response.json();
-    const session_id = data["id"];
-    sessionStorage.setItem("session_id", session_id);
 }
 
 async function loadSessionHistory(session_id) {
     const token = localStorage.getItem("token");
 
-    const requestPath = `/chat/history/${session_id}`;
-    const requestMethod = "GET";
-    const requestHeaders = {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-    };
+    try {
+        const response = await fetch(`/chat/history/${session_id}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
 
-    const response = await sendRequest(requestPath, requestMethod, requestHeaders);
+        if (!response.ok) {
+            if (response.status === 401) {
+                handleTokenExpired();
+            }
+            return;
+        }
 
-    if (!response) {
-        return;
+        const messages = await response.json();
+        Array.from(messages).forEach(message => {
+            addMessage(message.text, message.sender_type == "user" ? true : false);
+        });
+    } catch (error) {
+        console.error("Ошибка при загрузке истории:", error);
     }
-
-    const messages = await response.json();
-    Array.from(messages).forEach(message => {
-        addMessage(message.text, message.sender_type == "user" ? true : false);
-    });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -184,29 +212,41 @@ document.getElementById("authForm").addEventListener("submit", async function(e)
 
     clearErrors();
 
-    const requestPath = "/auth/login";
-    const requestMethod = "POST";
-    const requestHeaders = {
-        "Content-Type": "application/json"
-    };
-    const requestBody = {
-        "username": username,
-        "password": password
-    };
+    try {
+        const response = await fetch("/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "username": username,
+                "password": password
+            })
+        });
 
-    const response = await sendRequest(requestPath, requestMethod, requestHeaders, requestBody);
+        if (!response.ok) {
+            if (response.status === 401) {
+                displayError("Неверный логин или пароль");
+            } else if (response.status === 422) {
+                const errorData = await response.json();
+                displayValidationErrors(errorData.detail);
+            }
+            return;
+        }
 
-    if (!response) return;
+        const json = await response.json();
+        localStorage.setItem("token", json.access_token);
 
-    const json = await response.json();
-    localStorage.setItem("token", json.access_token);
+        await createSession();
 
-    await createSession();
+        document.getElementById("authOverlay").style.display = "none";
 
-    document.getElementById("authOverlay").style.display = "none";
-
-    addMessage(helloMessage, false);
-    await sendMessage(helloMessage, false);
+        addMessage(helloMessage, false);
+        await sendMessage(helloMessage, false);
+    } catch (error) {
+        console.error("Ошибка при входе:", error);
+        displayError("Ошибка подключения к серверу");
+    }
 });
 
 document.getElementById("registerBtn").addEventListener("click", async function() {
@@ -215,19 +255,31 @@ document.getElementById("registerBtn").addEventListener("click", async function(
 
     clearErrors();
 
-    const requestPath = "/auth/register";
-    const requestMethod = "POST";
-    const requestHeaders = {
-        "Content-Type": "application/json"
-    };
-    const requestBody = {
-        "username": username,
-        "password": password
-    };
+    try {
+        const response = await fetch("/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "username": username,
+                "password": password
+            })
+        });
 
-    const response = await sendRequest(requestPath, requestMethod, requestHeaders, requestBody);
+        if (!response.ok) {
+            if (response.status === 400) {
+                displayError("Пользователь с таким логином уже существует");
+            } else if (response.status === 422) {
+                const errorData = await response.json();
+                displayValidationErrors(errorData.detail);
+            }
+            return;
+        }
 
-    if (!response) return;
-
-    displaySuccess("Регистрация прошла успешна!");
+        displaySuccess("Регистрация прошла успешно!");
+    } catch (error) {
+        console.error("Ошибка при регистрации:", error);
+        displayError("Ошибка подключения к серверу");
+    }
 });

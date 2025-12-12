@@ -1,45 +1,4 @@
-export async function sendRequest(path, method, headers, body=null) {
-    try {
-        const response = await fetch(path, {
-            method: method,
-            headers: headers,
-            body: body ? JSON.stringify(body) : null
-        });
-
-        if (response.ok) {
-            return response;
-        }
-
-        switch (response.status) {
-            case 400:
-                displayError("Пользователь с таким логин уже существует");
-                break;
-            case 401:
-                const isAuthRequest = path.startsWith('/auth/');
-
-                if (isAuthRequest) {
-                    displayError("Неверный логин или пароль");
-                } else {
-                    handleTokenExpired();
-                }
-                break;
-            case 422:
-                const errorData = await response.json();
-                displayValidationErrors(errorData.detail);
-                break;
-            default:
-                break;
-        }
-        return null;
-    }
-    catch (error) {
-        console.log(`Ошибка: ${error}`);
-        displayError("Ошибка подключения к серверу");
-        return null;
-    }
-}
-
-function handleTokenExpired() {
+export function handleTokenExpired() {
     localStorage.removeItem("token");
     sessionStorage.removeItem("session_id");
 
@@ -56,7 +15,7 @@ function handleTokenExpired() {
     }
 }
 
-function displayError(message) {
+export function displayError(message) {
     const errorContainer = document.createElement("div");
     errorContainer.className = "global-error";
     errorContainer.textContent = message;
@@ -65,7 +24,7 @@ function displayError(message) {
     form.parentNode.insertBefore(errorContainer, form);
 }
 
-function displayValidationErrors(errors) {
+export function displayValidationErrors(errors) {
     errors.forEach(error => {
         const fieldName = error.loc[error.loc.length - 1];
         const errorMessage = getErrorMessage(error.type, error.msg, fieldName);
