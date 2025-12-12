@@ -32,28 +32,110 @@
 
     <h1 class="chat-title">Бот технической поддержки солнца</h1>
 
-    <div class="chat-container">
-        <div class="chat-header">
-            <h3>Чат-бот</h3>
-            <button id="clear-chat" class="clear-btn">Очистить историю</button>
+    <div class="chat-wrapper">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h3>Чат-бот</h3>
+                <button id="clear-chat" class="clear-btn">Очистить историю</button>
+            </div>
+
+            <!-- Блок сообщений -->
+            <div id="chat-messages" class="chat-messages">
+            </div>
+
+            <!-- Индикатор печати -->
+            <div class="typing-indicator" id="typing-indicator">
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712039.png" alt="Аватарка бота" class="message-avatar">
+                <div class="typing-text">Бот печатает...</div>
+            </div>
+
+            <!-- Поле ввода + кнопка -->
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Введите ваше сообщение...">
+                <button id="send-button">Отправить</button>
+            </div>
         </div>
 
-        <!-- Блок сообщений -->
-        <div id="chat-messages" class="chat-messages">
-        </div>
-
-        <!-- Индикатор печати -->
-        <div class="typing-indicator" id="typing-indicator">
-            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712039.png" alt="Аватарка бота" class="message-avatar">
-            <div class="typing-text">Бот печатает...</div>
-        </div>
-
-         <!-- Поле ввода + кнопка -->
-        <div class="input-container">
-            <input type="text" id="user-input" placeholder="Введите ваше сообщение...">
-            <button id="send-button">Отправить</button>
+        <!-- Иконка справки -->
+        <div class="help-icon-wrapper">
+            <div class="help-icon" id="helpIcon">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABC0lEQVR4AeyT4Q2CMBCF0Ul0E5xEmUScBJ0EN5FN8HtNIU2Vo2fiDxPJvfa19N5rr7Ctvvz8DVYLXFSicRxr0APFg6YD9ao6C1YNEDqxrgeT4A4e5nh3hpthGiAg0S4qtBse+B60QNHGNeJvYRqQcQQKiV9E8BiAeKMxME+xZqAToFHd1GS4x7FKFulrZxqw0z1QDHkqk9Pc5wa5aDqm9rp4TV3VLME8wVJSFLfKN6e6DRJxlehAqaa7mEVT4jJAXF+Mdl4kLiOXAQn6weiqhp3LRNyE1yB8MYibZUkdvQZpbhF3GbDzEEXKcZHLgEsOEXOLOpdBkWK2yGUQ6kOTaZhDl4GptPDy9w2eAAAA//+jAUKbAAAABklEQVQDADtFTjHYPTlUAAAAAElFTkSuQmCC"/>
+            </div>
+            <!-- Popup справки -->
+            <div class="help-popup" id="helpPopup">
+                <div class="popup-header">
+                    <h3>Доступные команды</h3>
+                    <button class="popup-close">&times;</button>
+                </div>
+                <div class="popup-content">
+                    <h4>Шаблоны сообщений:</h4>
+                    <ul class="templates-list">
+                        <li><strong>Проблема с подключением</strong> - "У меня не работает интернет"</li>
+                        <li><strong>Сброс пароля</strong> - "Забыл пароль от учетной записи"</li>
+                        <li><strong>Обновление системы</strong> - "Как обновить операционную систему?"</li>
+                        <li><strong>Запрос на удаленную помощь</strong> - "Нужна удаленная поддержка"</li>
+                    </ul>
+                    <h4>Команды:</h4>
+                    <ul class="commands-list">
+                        <li><code>/clear</code> - очистить историю чата</li>
+                        <li><code>/help</code> - показать справку</li>
+                        <li><code>/theme [light/dark]</code> - сменить тему</li>
+                        <li><code>/history</code> - показать историю сессии</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
+    <script>
+        // Добавьте этот код в script.js
+
+// Управление popup справки
+const helpIcon = document.getElementById('helpIcon');
+const helpPopup = document.getElementById('helpPopup');
+const popupClose = document.querySelector('.popup-close');
+
+// Показать popup при наведении на иконку
+helpIcon.addEventListener('mouseenter', () => {
+    helpPopup.classList.add('show');
+});
+
+// Скрыть popup при уходе курсора с иконки или popup
+helpIcon.addEventListener('mouseleave', (e) => {
+    // Проверяем, переходит ли курсор на popup
+    if (!helpPopup.contains(e.relatedTarget)) {
+        setTimeout(() => {
+            if (!helpPopup.matches(':hover')) {
+                helpPopup.classList.remove('show');
+            }
+        }, 100);
+    }
+});
+
+helpPopup.addEventListener('mouseleave', (e) => {
+    // Проверяем, переходит ли курсор на иконку
+    if (!helpIcon.contains(e.relatedTarget)) {
+        helpPopup.classList.remove('show');
+    }
+});
+
+// Закрытие popup по клику на крестик
+popupClose.addEventListener('click', () => {
+    helpPopup.classList.remove('show');
+});
+
+// Закрытие popup по клику вне области
+document.addEventListener('click', (e) => {
+    if (!helpIcon.contains(e.target) && !helpPopup.contains(e.target)) {
+        helpPopup.classList.remove('show');
+    }
+});
+
+// Открытие popup по клику (для мобильных устройств)
+helpIcon.addEventListener('click', (e) => {
+    e.stopPropagation();
+    helpPopup.classList.toggle('show');
+});
+    </script>
     <script type="module" src="utils.js"></script>
     <script type="module" src="script.js"></script>
 </body>

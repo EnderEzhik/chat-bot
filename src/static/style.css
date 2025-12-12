@@ -274,3 +274,150 @@ body {
     margin: 10px 0;
     text-align: center;
 }
+
+/* Стили для обертки чата и иконки помощи */
+.chat-wrapper {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+/* Стили для иконки справки */
+.help-icon-wrapper {
+    position: relative;
+}
+
+.help-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin-top: 60px;
+}
+
+.help-icon:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.help-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Стили для popup справки */
+.help-popup {
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    width: 320px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.help-popup.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.popup-header {
+    background-color: #007bff;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.popup-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.popup-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.popup-close:hover {
+    opacity: 1;
+}
+
+.popup-content {
+    padding: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.popup-content h4 {
+    color: #333;
+    margin: 15px 0 10px 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.popup-content h4:first-child {
+    margin-top: 0;
+}
+
+.templates-list,
+.commands-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #555;
+}
+
+.templates-list li,
+.commands-list li {
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.templates-list li:last-child,
+.commands-list li:last-child {
+    margin-bottom: 0;
+}
+
+.templates-list strong {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.commands-list code {
+    background-color: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    color: #007bff;
+    font-size: 0.9rem;
+}

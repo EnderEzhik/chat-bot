@@ -44,6 +44,14 @@ async function sendMessage(text, isUser) {
 
     const response = await sendRequest(requestPath, requestMethod, requestHeaders, requestBody);
 
+    if (!response) {
+        if (isTyping) {
+            isTyping = false;
+            typingIndicator.style.display = "none";
+        }
+        return;
+    }
+
     if (isTyping) {
         isTyping = false;
         typingIndicator.style.display = "none";
@@ -89,7 +97,11 @@ async function clearChatHistory() {
             "Authorization": `Bearer ${token}`
     };
 
-    await sendRequest(requestPath, requestMethod, requestHeaders);
+    const response = await sendRequest(requestPath, requestMethod, requestHeaders);
+
+    if (!response) {
+        return;
+    }
 
     addMessage(helloMessage, false);
     await sendMessage(helloMessage, false);
@@ -106,6 +118,10 @@ async function createSession() {
 
     const response = await sendRequest(requestPath, requestMethod, requestHeaders);
 
+    if (!response) {
+        return;
+    }
+
     const data = await response.json();
     const session_id = data["id"];
     sessionStorage.setItem("session_id", session_id);
@@ -113,13 +129,20 @@ async function createSession() {
 
 async function loadSessionHistory(session_id) {
     const token = localStorage.getItem("token");
-    const response = await fetch(`/chat/history/${session_id}`, {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-        }
-    });
+
+    const requestPath = `/chat/history/${session_id}`;
+    const requestMethod = "GET";
+    const requestHeaders = {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+    };
+
+    const response = await sendRequest(requestPath, requestMethod, requestHeaders);
+
+    if (!response) {
+        return;
+    }
+
     const messages = await response.json();
     Array.from(messages).forEach(message => {
         addMessage(message.text, message.sender_type == "user" ? true : false);

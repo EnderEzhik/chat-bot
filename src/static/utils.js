@@ -3,7 +3,7 @@ export async function sendRequest(path, method, headers, body=null) {
         const response = await fetch(path, {
             method: method,
             headers: headers,
-            body: JSON.stringify(body)
+            body: body ? JSON.stringify(body) : null
         });
 
         if (response.ok) {
@@ -15,7 +15,13 @@ export async function sendRequest(path, method, headers, body=null) {
                 displayError("Пользователь с таким логин уже существует");
                 break;
             case 401:
-                displayError("Неверный логин или пароль");
+                const isAuthRequest = path.startsWith('/auth/');
+
+                if (isAuthRequest) {
+                    displayError("Неверный логин или пароль");
+                } else {
+                    handleTokenExpired();
+                }
                 break;
             case 422:
                 const errorData = await response.json();
@@ -24,11 +30,29 @@ export async function sendRequest(path, method, headers, body=null) {
             default:
                 break;
         }
-        return;
+        return null;
     }
     catch (error) {
         console.log(`Ошибка: ${error}`);
         displayError("Ошибка подключения к серверу");
+        return null;
+    }
+}
+
+function handleTokenExpired() {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("session_id");
+
+    displayError("Сессия истекла. Пожалуйста, войдите снова.");
+
+    const authOverlay = document.getElementById("authOverlay");
+    if (authOverlay) {
+        authOverlay.style.display = "flex";
+    }
+
+    const chatMessages = document.getElementById("chat-messages");
+    if (chatMessages) {
+        chatMessages.innerHTML = "";
     }
 }
 
