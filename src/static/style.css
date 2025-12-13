@@ -1,9 +1,39 @@
+:root {
+    /* Основные цвета */
+    --color-primary: #007bff;
+    --color-primary-dark: #0056b3;
+    --color-text-primary: #333;
+    --color-text-secondary: #6c757d;
+    --color-background: #f0f0f0;
+    --color-white: white;
+    --color-light-gray: #e9ecef;
+    --color-border: #ddd;
+    --color-border-light: #eee;
+    --color-error: #dc3545;
+    
+    /* Размеры шрифтов */
+    --font-size-base: 1rem;
+    --font-size-large: 1.5rem;
+    --font-size-medium: 1.4rem;
+    --font-size-small: 0.85rem;
+    
+    /* Отступы */
+    --spacing-small: 10px;
+    --spacing-medium: 15px;
+    --spacing-large: 20px;
+    
+    /* Радиусы скругления */
+    --border-radius-small: 6px;
+    --border-radius-medium: 10px;
+    --border-radius-large: 20px;
+}
+
 body {
     font-family: sans-serif;
     min-height: 100vh;
-    background-color: #f0f0f0;
+    background-color: var(--color-background);
     margin: 0;
-    padding: 20px;
+    padding: var(--spacing-large);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -14,10 +44,10 @@ body {
 /* Стили для заголовка над чатом */
 .chat-title {
     text-align: center;
-    margin: 0 0 15px 0;
-    color: #333;
+    margin: 0 0 var(--spacing-medium) 0;
+    color: var(--color-text-primary);
     font-family: sans-serif;
-    font-size: 1.5rem;
+    font-size: var(--font-size-large);
     font-weight: 600;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
     padding: 0;
@@ -38,23 +68,23 @@ body {
 }
 
 .auth-container {
-    background-color: white;
-    border-radius: 10px;
+    background-color: var(--color-white);
+    border-radius: var(--border-radius-medium);
     width: 350px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     overflow: hidden;
 }
 
 .auth-header {
-    background-color: #007bff;
-    color: white;
-    padding: 20px;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    padding: var(--spacing-large);
     text-align: center;
 }
 
 .auth-header h3 {
     margin: 0;
-    font-size: 1.4rem;
+    font-size: var(--font-size-medium);
 }
 
 .auth-form {
@@ -68,23 +98,23 @@ body {
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    color: #333;
+    color: var(--color-text-primary);
     font-weight: 500;
 }
 
 .form-group input {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-small);
+    font-size: var(--font-size-base);
     box-sizing: border-box;
     transition: border-color 0.3s;
 }
 
 .form-group input:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
 }
 
@@ -98,24 +128,24 @@ body {
     flex: 1;
     padding: 12px;
     border: none;
-    border-radius: 6px;
-    font-size: 1rem;
+    border-radius: var(--border-radius-small);
+    font-size: var(--font-size-base);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .login-btn {
-    background-color: #007bff;
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--color-white);
 }
 
 .login-btn:hover {
-    background-color: #0056b3;
+    background-color: var(--color-primary-dark);
 }
 
 .register-btn {
-    background-color: #e9ecef;
+    background-color: var(--color-light-gray);
     color: #495057;
     border: 1px solid #dee2e6;
 }
@@ -125,16 +155,16 @@ body {
 }
 
 .auth-footer {
-    padding: 15px 25px;
+    padding: var(--spacing-medium) 25px;
     background-color: #f8f9fa;
     text-align: center;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--color-border-light);
 }
 
 .auth-footer p {
     margin: 0;
-    color: #6c757d;
-    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-small);
 }
 
 /* Убираем flex из chat-wrapper и делаем его контейнером для позиционирования */
@@ -146,17 +176,17 @@ body {
 /* Стили для чата - центрируем его */
 .chat-container {
     width: 400px;
-    background-color: white;
-    border-radius: 10px;
+    background-color: var(--color-white);
+    border-radius: var(--border-radius-medium);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     position: relative;
 }
 
 .chat-header {
-    background-color: #007bff;
-    color: white;
-    padding: 15px;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    padding: var(--spacing-medium);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -168,9 +198,9 @@ body {
 
 .clear-btn {
     background: rgba(255, 255, 255, 0.2);
-    color: white;
+    color: var(--color-white);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 5px 10px;
+    padding: 5px var(--spacing-small);
     border-radius: 5px;
     cursor: pointer;
 }
@@ -181,16 +211,16 @@ body {
 
 .chat-messages {
     height: 400px;
-    padding: 15px;
+    padding: var(--spacing-medium);
     overflow-y: auto;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-border-light);
 }
 
 .message {
-    margin-bottom: 15px;
+    margin-bottom: var(--spacing-medium);
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: var(--spacing-small);
 }
 
 .user-message {
@@ -212,12 +242,12 @@ body {
 }
 
 .user-message .message-text {
-    background-color: #007bff;
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--color-white);
 }
 
 .bot-message .message-text {
-    background-color: #e9ecef;
+    background-color: var(--color-light-gray);
     color: black;
 }
 
@@ -226,36 +256,36 @@ body {
     bottom: 60px;
     left: 0;
     right: 0;
-    padding: 10px 15px;
+    padding: var(--spacing-small) var(--spacing-medium);
     display: none;
     align-items: center;
-    gap: 10px;
-    color: #6c757d;
+    gap: var(--spacing-small);
+    color: var(--color-text-secondary);
     font-style: italic;
-    background-color: white;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
+    background-color: var(--color-white);
+    border-top: 1px solid var(--color-border-light);
+    border-bottom: 1px solid var(--color-border-light);
 }
 
 .input-container {
     display: flex;
-    padding: 10px;
+    padding: var(--spacing-small);
 }
 
 #user-input {
     flex-grow: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    margin-right: 10px;
+    padding: var(--spacing-small);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-large);
+    margin-right: var(--spacing-small);
 }
 
 #send-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
+    padding: var(--spacing-small) var(--spacing-large);
+    background-color: var(--color-primary);
+    color: var(--color-white);
     border: none;
-    border-radius: 20px;
+    border-radius: var(--border-radius-large);
     cursor: pointer;
 }
 
@@ -270,8 +300,8 @@ body {
 .help-icon {
     width: 40px;
     height: 40px;
-    background-color: #007bff;
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--color-white);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -282,7 +312,7 @@ body {
 }
 
 .help-icon:hover {
-    background-color: #0056b3;
+    background-color: var(--color-primary-dark);
     transform: scale(1.1);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -297,10 +327,10 @@ body {
 .help-popup {
     position: absolute;
     top: 50px; /* Сдвигаем popup вниз относительно иконки */
-    left: 10px; /* Сдвигаем popup немного вправо от иконки */
+    left: var(--spacing-small); /* Сдвигаем popup немного вправо от иконки */
     width: 320px;
-    background-color: white;
-    border-radius: 10px;
+    background-color: var(--color-white);
+    border-radius: var(--border-radius-medium);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     opacity: 0;
@@ -317,10 +347,10 @@ body {
 }
 
 .popup-header {
-    background-color: #007bff;
-    color: white;
-    padding: 15px 20px;
-    border-radius: 10px 10px 0 0;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    padding: var(--spacing-medium) var(--spacing-large);
+    border-radius: var(--border-radius-medium) var(--border-radius-medium) 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -353,15 +383,15 @@ body {
 }
 
 .popup-content {
-    padding: 20px;
+    padding: var(--spacing-large);
     max-height: 400px;
     overflow-y: auto;
 }
 
 .popup-content h4 {
-    color: #333;
-    margin: 15px 0 10px 0;
-    font-size: 1rem;
+    color: var(--color-text-primary);
+    margin: var(--spacing-medium) 0 var(--spacing-small) 0;
+    font-size: var(--font-size-base);
     font-weight: 600;
 }
 
@@ -388,38 +418,38 @@ body {
 }
 
 .templates-list strong {
-    color: #007bff;
+    color: var(--color-primary);
     font-weight: 600;
 }
 
 .commands-list code {
-    background-color: #f0f0f0;
+    background-color: var(--color-background);
     padding: 2px 6px;
     border-radius: 4px;
     font-family: monospace;
-    color: #007bff;
+    color: var(--color-primary);
     font-size: 0.9rem;
 }
 
 /* Стили для ошибок валидации */
 .form-group input.error {
-    border-color: #dc3545;
+    border-color: var(--color-error);
     box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
 }
 
 .error-message {
-    color: #dc3545;
-    font-size: 0.85rem;
+    color: var(--color-error);
+    font-size: var(--font-size-small);
     margin-top: 5px;
 }
 
 .global-error {
-    color: #dc3545;
+    color: var(--color-error);
     background-color: #f8d7da;
     border: 1px solid #f5c6cb;
     border-radius: 4px;
-    padding: 10px;
-    margin: 10px 0;
+    padding: var(--spacing-small);
+    margin: var(--spacing-small) 0;
     text-align: center;
 }
 
@@ -428,7 +458,7 @@ body {
     background-color: #d4edda;
     border: 1px solid #c3e6cb;
     border-radius: 4px;
-    padding: 10px;
-    margin: 10px 0;
+    padding: var(--spacing-small);
+    margin: var(--spacing-small) 0;
     text-align: center;
 }
