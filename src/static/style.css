@@ -1,13 +1,14 @@
 body {
     font-family: sans-serif;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
     background-color: #f0f0f0;
     margin: 0;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
 }
 
 /* Стили для заголовка над чатом */
@@ -136,12 +137,20 @@ body {
     font-size: 0.85rem;
 }
 
+/* Убираем flex из chat-wrapper и делаем его контейнером для позиционирования */
+.chat-wrapper {
+    position: relative;
+    display: inline-block; /* Чтобы контейнер занимал только нужную ширину */
+}
+
+/* Стили для чата - центрируем его */
 .chat-container {
     width: 400px;
     background-color: white;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    position: relative;
 }
 
 .chat-header {
@@ -213,12 +222,19 @@ body {
 }
 
 .typing-indicator {
+    position: absolute;
+    bottom: 60px;
+    left: 0;
+    right: 0;
     padding: 10px 15px;
     display: none;
     align-items: center;
     gap: 10px;
     color: #6c757d;
     font-style: italic;
+    background-color: white;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
 }
 
 .input-container {
@@ -243,49 +259,12 @@ body {
     cursor: pointer;
 }
 
-/* Стили для ошибок валидации */
-.form-group input.error {
-    border-color: #dc3545;
-    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
-}
-
-.error-message {
-    color: #dc3545;
-    font-size: 0.85rem;
-    margin-top: 5px;
-}
-
-.global-error {
-    color: #dc3545;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    border-radius: 4px;
-    padding: 10px;
-    margin: 10px 0;
-    text-align: center;
-}
-
-.global-success {
-    color: #155724;
-    background-color: #d4edda;
-    border: 1px solid #c3e6cb;
-    border-radius: 4px;
-    padding: 10px;
-    margin: 10px 0;
-    text-align: center;
-}
-
-/* Стили для обертки чата и иконки помощи */
-.chat-wrapper {
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-}
-
-/* Стили для иконки справки */
+/* Стили для иконки справки - абсолютное позиционирование справа от чата */
 .help-icon-wrapper {
-    position: relative;
+    position: absolute;
+    right: -50px;
+    top: 11px;
+    z-index: 10;
 }
 
 .help-icon {
@@ -300,7 +279,6 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    margin-top: 60px;
 }
 
 .help-icon:hover {
@@ -309,16 +287,17 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.help-icon svg {
+.help-icon img {
     width: 20px;
     height: 20px;
+    filter: brightness(0) invert(1); /* Делаем иконку белой */
 }
 
 /* Стили для popup справки */
 .help-popup {
     position: absolute;
-    top: 50px;
-    left: 50px;
+    top: 50px; /* Сдвигаем popup вниз относительно иконки */
+    left: 10px; /* Сдвигаем popup немного вправо от иконки */
     width: 320px;
     background-color: white;
     border-radius: 10px;
@@ -420,4 +399,36 @@ body {
     font-family: monospace;
     color: #007bff;
     font-size: 0.9rem;
+}
+
+/* Стили для ошибок валидации */
+.form-group input.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
+.global-error {
+    color: #dc3545;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.global-success {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    text-align: center;
 }
