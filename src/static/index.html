@@ -16,11 +16,11 @@
             <form id="authForm" class="auth-form">
                 <div class="form-group">
                     <label for="username">Логин</label>
-                    <input type="text" id="username" name="username" placeholder="Введите логин" required>
+                    <input type="text" id="username" name="username" placeholder="Введите логин" required minlength="4" maxlength="20">
                 </div>
                 <div class="form-group">
                     <label for="password">Пароль</label>
-                    <input type="password" id="password" name="password" placeholder="Введите пароль" required>
+                    <input type="password" id="password" name="password" placeholder="Введите пароль" required minlength="6" maxlength="32">
                 </div>
                 <div class="auth-buttons">
                     <button type="button" id="registerBtn" class="auth-btn register-btn">Зарегистрироваться</button>
@@ -86,56 +86,6 @@
             </div>
         </div>
     </div>
-    <script>
-        // Добавьте этот код в script.js
-
-// Управление popup справки
-const helpIcon = document.getElementById('helpIcon');
-const helpPopup = document.getElementById('helpPopup');
-const popupClose = document.querySelector('.popup-close');
-
-// Показать popup при наведении на иконку
-helpIcon.addEventListener('mouseenter', () => {
-    helpPopup.classList.add('show');
-});
-
-// Скрыть popup при уходе курсора с иконки или popup
-helpIcon.addEventListener('mouseleave', (e) => {
-    // Проверяем, переходит ли курсор на popup
-    if (!helpPopup.contains(e.relatedTarget)) {
-        setTimeout(() => {
-            if (!helpPopup.matches(':hover')) {
-                helpPopup.classList.remove('show');
-            }
-        }, 100);
-    }
-});
-
-helpPopup.addEventListener('mouseleave', (e) => {
-    // Проверяем, переходит ли курсор на иконку
-    if (!helpIcon.contains(e.relatedTarget)) {
-        helpPopup.classList.remove('show');
-    }
-});
-
-// Закрытие popup по клику на крестик
-popupClose.addEventListener('click', () => {
-    helpPopup.classList.remove('show');
-});
-
-// Закрытие popup по клику вне области
-document.addEventListener('click', (e) => {
-    if (!helpIcon.contains(e.target) && !helpPopup.contains(e.target)) {
-        helpPopup.classList.remove('show');
-    }
-});
-
-// Открытие popup по клику (для мобильных устройств)
-helpIcon.addEventListener('click', (e) => {
-    e.stopPropagation();
-    helpPopup.classList.toggle('show');
-});
-    </script>
     <script type="module" src="utils.js"></script>
     <script type="module" src="script.js"></script>
 </body>

@@ -195,6 +195,45 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
+const helpIcon = document.getElementById("helpIcon");
+const helpPopup = document.getElementById("helpPopup");
+const popupClose = document.querySelector(".popup-close");
+
+helpIcon.addEventListener("mouseenter", () => {
+    helpPopup.classList.add("show");
+});
+
+helpIcon.addEventListener("mouseleave", (e) => {
+    if (!helpPopup.contains(e.relatedTarget)) {
+        setTimeout(() => {
+            if (!helpPopup.matches(":hover")) {
+                helpPopup.classList.remove("show");
+            }
+        }, 100);
+    }
+});
+
+helpPopup.addEventListener("mouseleave", (e) => {
+    if (!helpIcon.contains(e.relatedTarget)) {
+        helpPopup.classList.remove("show");
+    }
+});
+
+popupClose.addEventListener("click", () => {
+    helpPopup.classList.remove("show");
+});
+
+document.addEventListener("click", (e) => {
+    if (!helpIcon.contains(e.target) && !helpPopup.contains(e.target)) {
+        helpPopup.classList.remove("show");
+    }
+});
+
+helpIcon.addEventListener("click", (e) => {
+    e.stopPropagation();
+    helpPopup.classList.toggle("show");
+});
+
 sendButton.addEventListener("click", handleSendMessage);
 
 userInput.addEventListener("keypress", (e) => {
@@ -207,6 +246,13 @@ clearChatButton.addEventListener("click", clearChatHistory)
 
 document.getElementById("authForm").addEventListener("submit", async function(e) {
     e.preventDefault();
+    const form = document.getElementById("authForm");
+    
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
@@ -250,6 +296,13 @@ document.getElementById("authForm").addEventListener("submit", async function(e)
 });
 
 document.getElementById("registerBtn").addEventListener("click", async function() {
+    const form = document.getElementById("authForm");
+    
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
