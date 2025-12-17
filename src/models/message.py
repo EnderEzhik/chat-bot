@@ -20,7 +20,7 @@ from typing import Literal
 
 
 class MessageBase(BaseModel):
-    sender_type: str = Literal["user", "bot"]
+    sender_type: Literal["user", "bot"]
     text: str = Field(min_length=1)
 
 

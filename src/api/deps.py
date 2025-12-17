@@ -30,7 +30,7 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 async def get_current_user(db_session: SessionDep, token: str = Depends(oauth2_scheme)) -> User:
     credentials_exception = HTTPException(status_code=401,
                                           detail="Could not validate credentials",
-                                          headers={"WWW-Autheenticate": "Bearer"})
+                                          headers={"Autheenticate": "Bearer"})
 
     try:
         payload = jwt.decode(jwt=token,
