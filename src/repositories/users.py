@@ -5,6 +5,18 @@ from src.core.security import get_password_hash, verify_password
 from src.models.user import User, UserCreate, UserUpdate
 
 
+async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
+    user = await session.get(User, user_id)
+    return user
+
+
+async def get_user_by_username(session: AsyncSession, username: str) -> User | None:
+    query = select(User).where(User.username == username)
+    result = await session.execute(query)
+    user = result.scalar_one_or_none()
+    return user
+
+
 async def create_user(session: AsyncSession, user_create: UserCreate) -> User:
     user_data = user_create.model_dump(exclude={"password"})
     hashed_password = get_password_hash(user_create.password)
@@ -25,18 +37,6 @@ async def update_user(session: AsyncSession, user_db: User, user_update: UserUpd
     session.add(user_db)
     await session.commit()
     return user_db
-
-
-async def get_user_by_username(session: AsyncSession, username: str) -> User | None:
-    query = select(User).where(User.username == username)
-    result = await session.execute(query)
-    user = result.scalar_one_or_none()
-    return user
-
-
-async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
-    user = await session.get(User, user_id)
-    return user
 
 
 async def authenticate(session: AsyncSession, username: str, password: str) -> User | None:

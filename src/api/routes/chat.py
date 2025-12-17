@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from asyncio import sleep
 
@@ -13,14 +13,16 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
 
 
 @router.post("/session")
-async def session(current_user: CurrentUser, session: SessionDep):
-    session = await create_session(session, current_user.id)
+async def session(current_user: CurrentUser, db_session: SessionDep):
+    session = await create_session(db_session, current_user.id)
     return session
 
 
 @router.post("/message", status_code=201)
 async def handle_message(_: CurrentUser, session: SessionDep, message_create: MessageCreate):
-    _ = await get_session(session, message_create.session_id)
+    check_session = await get_session(session, message_create.session_id)
+    if not check_session:
+        raise HTTPException(status_code=404, detail="Session not found")
 
     await save_message(session, message_create)
     if message_create.sender_type == "bot":

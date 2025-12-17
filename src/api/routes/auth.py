@@ -3,7 +3,7 @@ from datetime import timedelta
 from fastapi import APIRouter, status, HTTPException
 
 from src.api.deps import SessionDep
-from src.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, verify_password
+from src.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token
 from src.models.token import Token
 from src.models.user import UserCreate
 from src.repositories import users as user_repo

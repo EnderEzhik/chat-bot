@@ -52,6 +52,8 @@ async function sendMessage(text, isUser) {
                 isTyping = false;
                 typingIndicator.style.display = "none";
             }
+            alert("Ошибка при отправке сообщения =(");
+            console.log(await response.text());
             return;
         }
 
@@ -247,12 +249,12 @@ clearChatButton.addEventListener("click", clearChatHistory)
 document.getElementById("authForm").addEventListener("submit", async function(e) {
     e.preventDefault();
     const form = document.getElementById("authForm");
-    
+
     if (!form.checkValidity()) {
         form.reportValidity();
         return;
     }
-    
+
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
@@ -297,12 +299,12 @@ document.getElementById("authForm").addEventListener("submit", async function(e)
 
 document.getElementById("registerBtn").addEventListener("click", async function() {
     const form = document.getElementById("authForm");
-    
+
     if (!form.checkValidity()) {
         form.reportValidity();
         return;
     }
-    
+
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 

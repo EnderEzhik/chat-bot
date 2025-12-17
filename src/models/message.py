@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Literal
 
 from src.models import Base
 
@@ -17,6 +16,7 @@ class Message(Base):
 
 
 from pydantic import BaseModel, Field
+from typing import Literal
 
 
 class MessageBase(BaseModel):

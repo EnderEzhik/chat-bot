@@ -18,7 +18,7 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    password: str | None = Field(default=None, min_length=6, max_length=32)
+    password: str = Field(..., min_length=6, max_length=32)
 
 
 class UserUpdate(UserBase):
