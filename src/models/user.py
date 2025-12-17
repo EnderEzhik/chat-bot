@@ -1,7 +1,5 @@
 from sqlalchemy import Column, Integer, String
 
-from pydantic import BaseModel, ConfigDict, Field
-
 from src.models import Base
 
 
@@ -13,6 +11,9 @@ class User(Base):
     hashed_password = Column(String(256), nullable=False)
 
 
+from pydantic import BaseModel, Field
+
+
 class UserBase(BaseModel):
     username: str = Field(..., min_length=4, max_length=20)
 
@@ -21,11 +22,6 @@ class UserCreate(UserBase):
     password: str = Field(..., min_length=6, max_length=32)
 
 
-class UserUpdate(UserBase):
+class UserUpdate(BaseModel):
     username: str | None = Field(default=None, min_length=4, max_length=20)
     password: str | None = Field(default=None, min_length=6, max_length=32)
-
-
-class UserOut(UserBase):
-    id: int
-    model_config = ConfigDict(from_attributes=True)

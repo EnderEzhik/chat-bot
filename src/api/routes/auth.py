@@ -22,14 +22,12 @@ async def register(session: SessionDep, user_create: UserCreate):
 
 @router.post("/login", response_model=Token)
 async def login(session: SessionDep, user_login: UserCreate):
-    auth_error = HTTPException(status_code=401, detail="Login or password incorrect")
-
     user = await user_repo.authenticate(session, user_login.username, user_login.password)
     if not user:
-        raise auth_error
+        raise HTTPException(status_code=401, detail="Login or password incorrect")
 
     access_token = create_access_token(
         data={"username": user.username},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    return Token(access_token=access_token, token_type="bearer")
+    return Token(access_token=access_token)

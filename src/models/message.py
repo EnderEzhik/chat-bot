@@ -2,7 +2,7 @@ from datetime import datetime
 
 from src.models import Base
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, CheckConstraint, func
 
 
 class Message(Base):
@@ -14,6 +14,10 @@ class Message(Base):
     text = Column(String, nullable=False)
     sent_at = Column(DateTime, default=func.now())
 
+    __table_args__ = (
+        CheckConstraint("sender_type IN ('user', 'bot')", name="check_sender_type"),
+    )
+
 
 from pydantic import BaseModel, Field
 from typing import Literal
@@ -21,7 +25,7 @@ from typing import Literal
 
 class MessageBase(BaseModel):
     sender_type: Literal["user", "bot"]
-    text: str = Field(min_length=1)
+    text: str = Field(..., min_length=1)
 
 
 class MessageCreate(MessageBase):
