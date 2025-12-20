@@ -48,11 +48,14 @@ async function sendMessage(text, isUser) {
             if (response.status === 401) {
                 handleTokenExpired();
             }
+            else {
+                alert("Ошибка при отправке сообщения =(");
+            }
             if (isTyping) {
                 isTyping = false;
                 typingIndicator.style.display = "none";
             }
-            alert("Ошибка при отправке сообщения =(");
+
             console.log(await response.text());
             return;
         }
@@ -72,6 +75,7 @@ async function sendMessage(text, isUser) {
             isTyping = false;
             typingIndicator.style.display = "none";
         }
+        alert("Ошибка при отправке сообщения =(");
     }
 }
 
@@ -171,8 +175,8 @@ async function loadSessionHistory(session_id) {
         }
 
         const messages = await response.json();
-        Array.from(messages).forEach(message => {
-            addMessage(message.text, message.sender_type == "user" ? true : false);
+        messages.forEach(message => {
+            addMessage(message.text, message.sender_type === "user");
         });
     } catch (error) {
         console.error("Ошибка при загрузке истории:", error);

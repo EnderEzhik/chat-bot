@@ -7,7 +7,7 @@ from sqlalchemy.pool import StaticPool
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from src.main import app
-from src.api.deps import session_id
+from src.api.deps import get_session
 from src.models import Base
 from src.core.security import create_access_token
 
@@ -37,7 +37,7 @@ async def override_get_session():
         yield session
 
 
-app.dependency_overrides[session_id] = override_get_session
+app.dependency_overrides[get_session] = override_get_session
 
 
 def test_register_user():

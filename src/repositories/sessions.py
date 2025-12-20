@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.session import Session
 
 
-async def get_session(session: AsyncSession, session_id: str) -> Session | None:
-    session = await session.get(Session, session_id)
+async def get_session(db_session: AsyncSession, session_id: str) -> Session | None:
+    session = await db_session.get(Session, session_id)
     return session
 
 
