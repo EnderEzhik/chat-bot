@@ -1,6 +1,7 @@
 from datetime import timedelta
 
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 
 from src.api.deps import SessionDep
 from src.core.security import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token
@@ -23,6 +24,22 @@ async def register(session: SessionDep, user_create: UserCreate):
 @router.post("/login", response_model=Token)
 async def login(session: SessionDep, user_login: UserCreate):
     user = await user_repo.authenticate(session, user_login.username, user_login.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login or password incorrect")
+
+    access_token = create_access_token(
+        data={"username": user.username},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    return Token(access_token=access_token)
+
+
+@router.post("/token", response_model=Token)
+async def login_for_access_token(
+    session: SessionDep,
+    form_data: OAuth2PasswordRequestForm = Depends()
+):
+    user = await user_repo.authenticate(session, form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=401, detail="Login or password incorrect")
 
