@@ -118,7 +118,7 @@
 
 ### Тестирование
 ```bash
-pytest -v
+python -m pytest -v
 ```
 
 ### Полезное
