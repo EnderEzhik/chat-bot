@@ -8,6 +8,8 @@ import src.repositories.sessions as sessions_repo
 import src.repositories.messages as messages_repo
 from src.services import bot
 
+from loguru import logger
+
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -15,6 +17,7 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
 @router.post("/session")
 async def create_chat_session(current_user: CurrentUser, db_session: SessionDep):
     session = await sessions_repo.create_session(db_session, current_user.id)
+    logger.info(f"Успешное создание сессии: {current_user.username} - {session.id}")
     return session
 
 
@@ -22,8 +25,10 @@ async def create_chat_session(current_user: CurrentUser, db_session: SessionDep)
 async def handle_message(current_user: CurrentUser, session: SessionDep, message_create: MessageCreate):
     check_session = await sessions_repo.get_session(session, message_create.session_id)
     if not check_session:
+        logger.info(f"Попытка отправить сообщение в несуществующую сессию: {current_user.username} - {message_create.session_id}")
         raise HTTPException(status_code=404, detail="Session not found")
     if check_session.user_id != current_user.id:
+        logger.info(f"Попытка отправить сообщение в чужую сессию: {current_user.username} - {message_create.session_id}")
         raise HTTPException(status_code=403, detail="Access denied")
 
     await messages_repo.save_message(session, message_create)
@@ -36,6 +41,7 @@ async def handle_message(current_user: CurrentUser, session: SessionDep, message
 
     await asyncio.sleep(2)
 
+    logger.info(f"Успешная отправка сообщения: {current_user.username} - {message_create.session_id}")
     return { "answer": bot_answer }
 
 
@@ -43,11 +49,14 @@ async def handle_message(current_user: CurrentUser, session: SessionDep, message
 async def get_messages_history(current_user: CurrentUser, session: SessionDep, session_id: str):
     check_session = await sessions_repo.get_session(session, session_id)
     if not check_session:
+        logger.info(f"Попытка получить историю несуществующей сессии: {current_user.username} - {session_id}")
         raise HTTPException(status_code=404, detail="Session not found")
     if check_session.user_id != current_user.id:
+        logger.info(f"Попытка получить историю чужой сессии: {current_user.username} - {session_id}")
         raise HTTPException(status_code=403, detail="Access denied")
 
     messages = await messages_repo.get_messages_by_session_id(session, session_id)
+    logger.info(f"Успешное получение истории сообщений: {current_user.username} - {session_id}")
     return messages
 
 
@@ -55,8 +64,11 @@ async def get_messages_history(current_user: CurrentUser, session: SessionDep, s
 async def delete_messages_history(current_user: CurrentUser, session: SessionDep, session_id: str):
     check_session = await sessions_repo.get_session(session, session_id)
     if not check_session:
+        logger.info(f"Попытка удалить историю несуществующей сессии: {current_user.username} - {session_id}")
         raise HTTPException(status_code=404, detail="Session not found")
     if check_session.user_id != current_user.id:
+        logger.info(f"Попытка удалить историю чужой сессии: {current_user.username} - {session_id}")
         raise HTTPException(status_code=403, detail="Access denied")
 
     await messages_repo.delete_messages_by_session_id(session, session_id)
+    logger.info(f"Успешное удаление истории сообщений: {current_user.username} - {session_id}")
