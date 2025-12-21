@@ -212,7 +212,7 @@ async function loadSessionHistory(session_id) {
         });
     }
     catch (error) {
-        console.error("при загрузке истории:", error);
+        console.error("Ошибка при загрузке истории:", error);
         showErrorPopup("Ошибка подключения к серверу.");
     }
 }
@@ -260,13 +260,13 @@ function setHelpPopupListeners() {
 
 function setListeners() {
     document.getElementById("send-button").addEventListener("click", handleSendMessage);
-    document.getElementById("clear-chat").addEventListener("click", clearChatHistory)
+    document.getElementById("clear-chat").addEventListener("click", clearChatHistory);
 
     userInput.addEventListener("keypress", (e) => {
         if (e.key === "Enter") {
             handleSendMessage();
         }
-    })
+    });
 
     document.getElementById("authForm").addEventListener("submit", async function(e) {
         e.preventDefault();
@@ -377,7 +377,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const session_id = sessionStorage.getItem("session_id");
     if (!session_id) {
-        await createSession();
+        await createSession(token);
         await sendMessage(helloMessage, false);
     }
     else {

@@ -10,6 +10,7 @@
     --color-border: #ddd;
     --color-border-light: #eee;
     --color-error: #dc3545;
+    --color-success: #28a745;
 
     /* Размеры шрифтов */
     --font-size-base: 1rem;
@@ -123,7 +124,7 @@ body {
 }
 
 .form-group input:valid:not(:placeholder-shown) {
-    border-color: #28a745; /*TODO: вынести цвет в переменную*/
+    border-color: var(--color-success);
     box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
 }
 
@@ -163,26 +164,12 @@ body {
     background-color: #dee2e6;
 }
 
-.auth-footer {
-    padding: var(--spacing-medium) 25px;
-    background-color: #f8f9fa;
-    text-align: center;
-    border-top: 1px solid var(--color-border-light);
-}
-
-.auth-footer p {
-    margin: 0;
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-small);
-}
-
-/* Убираем flex из chat-wrapper и делаем его контейнером для позиционирования */
 .chat-wrapper {
     position: relative;
-    display: inline-block; /* Чтобы контейнер занимал только нужную ширину */
+    display: inline-block;
 }
 
-/* Стили для чата - центрируем его */
+/* Стили для чата */
 .chat-container {
     width: 400px;
     background-color: var(--color-white);
@@ -298,7 +285,7 @@ body {
     cursor: pointer;
 }
 
-/* Стили для иконки справки - абсолютное позиционирование справа от чата */
+/* Стили для иконки */
 .help-icon-wrapper {
     position: absolute;
     right: -50px;
@@ -329,14 +316,14 @@ body {
 .help-icon img {
     width: 20px;
     height: 20px;
-    filter: brightness(0) invert(1); /* Делаем иконку белой */
+    filter: brightness(0) invert(1);
 }
 
 /* Стили для popup справки */
 .help-popup {
     position: absolute;
-    top: 50px; /* Сдвигаем popup вниз относительно иконки */
-    left: var(--spacing-small); /* Сдвигаем popup немного вправо от иконки */
+    top: 50px;
+    left: var(--spacing-small);
     width: 320px;
     background-color: var(--color-white);
     border-radius: var(--border-radius-medium);
