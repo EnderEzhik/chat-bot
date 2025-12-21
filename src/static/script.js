@@ -258,6 +258,29 @@ function setHelpPopupListeners() {
     });
 }
 
+function setErrorPopupListeners() {
+    const overlay = document.getElementById("errorPopupOverlay");
+    const messageElement = document.getElementById("errorPopupMessage");
+    const button = document.getElementById("errorPopupButton");
+
+    const closePopup = () => {
+        overlay.classList.remove("show");
+        setTimeout(() => {
+            messageElement.textContent = "";
+        }, 300);
+    };
+
+    button.addEventListener("click", closePopup);
+
+    const overlayClickHandler = (e) => {
+        if (e.target === overlay) {
+            closePopup();
+            overlay.removeEventListener("click", overlayClickHandler);
+        }
+    };
+    overlay.addEventListener("click", overlayClickHandler);
+}
+
 function setListeners() {
     document.getElementById("send-button").addEventListener("click", handleSendMessage);
     document.getElementById("clear-chat").addEventListener("click", clearChatHistory);
@@ -364,6 +387,7 @@ function setListeners() {
     });
 
     setHelpPopupListeners();
+    setErrorPopupListeners();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
