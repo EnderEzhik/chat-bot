@@ -9,7 +9,7 @@
 - Логи приложения складываются в `logs/app.log`.
 
 ### Технологический стек
-- Язык: Python 3.11+
+- Язык: Python
 - Web API: FastAPI + Uvicorn
 - База данных: SQLite (async `aiosqlite`)
 - ORM и миграции: SQLAlchemy + Alembic
@@ -40,19 +40,27 @@
 ```
 
 ### Установка и запуск
+0. Скачайте проект
+   ```bash
+   git clone https://github.com/EnderEzhik/chat-bot.git
+   ```
 1. Подготовьте окружение
    ```bash
    pip install -r requirements.txt
    ```
-2. Примените миграции (создаст/обновит `db.db`)
+2. Создайте миграцию
+   ```bash
+   alembic revision --autogenerate -m "init"
+   ```
+3. Примените миграции
    ```bash
    alembic upgrade head
    ```
-3. Запустите сервер разработки
+4. Запустите сервер разработки
    ```bash
    uvicorn src.main:app --reload
    ```
-4. Проверьте доступность:
+5. Проверьте доступность:
    - API: `http://127.0.0.1:8000/docs` (интерактивная спецификация Swagger/OpenAPI, удобно тестировать все ендпоинты).
    - Фронтенд: `http://127.0.0.1:8000/` (редирект на `static/index.html`).
 

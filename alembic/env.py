@@ -1,5 +1,13 @@
-import sys
-import pathlib
+import os
+from pathlib import Path
+
+
+versions_path = Path(__file__).parent / "versions"
+
+if not versions_path.exists():
+    versions_path.mkdir()
+    print(f"Created versions directory: {versions_path}")
+
 
 from logging.config import fileConfig
 
