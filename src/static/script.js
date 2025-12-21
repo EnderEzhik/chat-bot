@@ -1,4 +1,4 @@
-import { clearErrors, displaySuccess, handleTokenExpired, displayError, displayValidationErrors, showErrorPopup } from "./utils.js";
+import { displaySuccess, handleTokenExpired, showErrorPopup, NoAccessToSession, showAuthForm } from "./utils.js";
 
 const userAvatar = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
 const botAvatar = "https://cdn-icons-png.flaticon.com/512/4712/4712039.png";
@@ -10,6 +10,7 @@ const userInput = document.getElementById("user-input");
 const typingIndicator = document.getElementById("typing-indicator");
 
 let isTyping = false;
+let abortController = null;
 
 function addMessage(text, isUser) {
     const messageDiv = document.createElement("div");
@@ -22,11 +23,23 @@ function addMessage(text, isUser) {
     `;
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    return messageDiv;
+}
+
+function removeMessage(message) {
+    chatMessages.removeChild(message);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 async function sendMessage(text, isUser) {
     const token = localStorage.getItem("token");
     const session_id = sessionStorage.getItem("session_id");
+
+    abortController = new AbortController();
+    const signal = abortController.signal;
+
+    const sendedMessage = addMessage(text, isUser);
 
     try {
         const response = await fetch("/chat/message", {
@@ -39,7 +52,8 @@ async function sendMessage(text, isUser) {
                 "session_id": session_id,
                 "sender_type": isUser ? "user" : "bot",
                 "text": text
-            })
+            }),
+            signal: signal
         });
 
         if (isTyping) {
@@ -48,30 +62,36 @@ async function sendMessage(text, isUser) {
         }
 
         if (!response.ok) {
+            removeMessage(sendedMessage);
+
             if (response.status === 401) {
                 handleTokenExpired();
             }
             else {
                 const errorText = await response.text();
-                showErrorPopup("Ошибка при отправке сообщения.");
                 console.log(errorText);
+                showErrorPopup("Ошибка при отправке сообщения.");
             }
-
             return;
         }
 
         if (isUser) {
             const json = await response.json();
-            addMessage(json.answer);
+            addMessage(json.answer, false);
         }
     }
     catch (error) {
-        console.error("Ошибка при отправке сообщения:", error);
+        removeMessage(sendedMessage);
         if (isTyping) {
             isTyping = false;
             typingIndicator.style.display = "none";
         }
-        showErrorPopup("Ошибка при отправке сообщения.");
+        if (error.name === "AbortError") {
+            return;
+        }
+
+        console.error("Ошибка при отправке сообщения:", error);
+        showErrorPopup("Ошибка подключения к серверу.");
     }
 }
 
@@ -86,17 +106,16 @@ async function handleSendMessage() {
     isTyping = true;
     typingIndicator.style.display = "flex";
 
-    addMessage(userText, true);
     await sendMessage(userText, true);
-
-    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 async function clearChatHistory() {
+    if (abortController) {
+        abortController.abort();
+    }
     if (isTyping) {
         isTyping = false;
         typingIndicator.style.display = "none";
-        //TODO: добавить отмену запроса отправленнного сообщения
     }
 
     chatMessages.innerHTML = "";
@@ -122,18 +141,15 @@ async function clearChatHistory() {
             return;
         }
 
-        addMessage(helloMessage, false);
         await sendMessage(helloMessage, false);
     }
     catch (error) {
         console.error("Ошибка при очистке истории:", error);
-        showErrorPopup("Ошибка при очистке истории.");
+        showErrorPopup("Ошибка подключения к серверу.");
     }
 }
 
-async function createSession() {
-    const token = localStorage.getItem("token");
-
+async function createSession(token) {
     try {
         const response = await fetch("/chat/session", {
             method: "POST",
@@ -154,12 +170,13 @@ async function createSession() {
             return;
         }
 
-        const data = await response.json();
-        const session_id = data["id"];
+        const json = await response.json();
+        const session_id = json["id"];
         sessionStorage.setItem("session_id", session_id);
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Ошибка при создании сессии:", error);
-        showErrorPopup("Ошибка при создании сессии.");
+        showErrorPopup("Ошибка подключения к серверу.");
     }
 }
 
@@ -178,10 +195,13 @@ async function loadSessionHistory(session_id) {
             if (response.status === 401) {
                 handleTokenExpired();
             }
+            else if (response.status === 403) {
+                NoAccessToSession();
+            }
             else {
                 const errorText = await response.text();
                 console.log(errorText);
-                showErrorPopup("Ошибка при загрузке истории. Попробуйте еще раз.");
+                showErrorPopup("Ошибка при загрузке истории.");
             }
             return;
         }
@@ -192,8 +212,8 @@ async function loadSessionHistory(session_id) {
         });
     }
     catch (error) {
-        console.error("Ошибка при загрузке истории:", error);
-        showErrorPopup("Ошибка при загрузке истории.");
+        console.error("при загрузке истории:", error);
+        showErrorPopup("Ошибка подключения к серверу.");
     }
 }
 
@@ -260,8 +280,6 @@ function setListeners() {
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
 
-        clearErrors();
-
         try {
             const response = await fetch("/auth/login", {
                 method: "POST",
@@ -276,11 +294,7 @@ function setListeners() {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    displayError("Неверный логин или пароль");
-                }
-                else if (response.status === 422) {
-                    const errorData = await response.json();
-                    displayValidationErrors(errorData.detail);
+                    showErrorPopup("Неверный логин или пароль");
                 }
                 else {
                     showErrorPopup("Ошибка при входе в систему.");
@@ -288,25 +302,24 @@ function setListeners() {
                 return;
             }
 
+            document.getElementById("authOverlay").style.display = "none";
+
             const json = await response.json();
-            localStorage.setItem("token", json.access_token);
+            const token = json.access_token;
+            localStorage.setItem("token", token);
 
             const session_id = sessionStorage.getItem("session_id");
             if (!session_id) {
-                await createSession();
-
-                addMessage(helloMessage, false);
+                await createSession(token);
                 await sendMessage(helloMessage, false);
             }
             else {
                 await loadSessionHistory(session_id);
             }
-
-            document.getElementById("authOverlay").style.display = "none";
         }
         catch (error) {
             console.error("Ошибка при входе:", error);
-            displayError("Ошибка подключения к серверу");
+            showErrorPopup("Ошибка подключения к серверу");
         }
     });
 
@@ -320,8 +333,6 @@ function setListeners() {
 
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
-
-        clearErrors();
 
         try {
             const response = await fetch("/auth/register", {
@@ -337,10 +348,10 @@ function setListeners() {
 
             if (!response.ok) {
                 if (response.status === 400) {
-                    displayError("Пользователь с таким логином уже существует");
-                } else if (response.status === 422) {
-                    const errorData = await response.json();
-                    displayValidationErrors(errorData.detail);
+                    showErrorPopup("Пользователь с таким логином уже существует");
+                }
+                else {
+                    showErrorPopup("Ошибка при регистрации.");
                 }
                 return;
             }
@@ -348,7 +359,7 @@ function setListeners() {
             displaySuccess("Регистрация прошла успешно!");
         } catch (error) {
             console.error("Ошибка при регистрации:", error);
-            displayError("Ошибка подключения к серверу");
+            showErrorPopup("Ошибка подключения к серверу");
         }
     });
 
@@ -360,14 +371,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const token = localStorage.getItem("token");
     if (!token) {
-        document.getElementById("authOverlay").style.display = "flex";
+        showAuthForm();
         return;
     }
 
     const session_id = sessionStorage.getItem("session_id");
     if (!session_id) {
         await createSession();
-        addMessage(helloMessage, false);
         await sendMessage(helloMessage, false);
     }
     else {
