@@ -1,6 +1,6 @@
 export function handleTokenExpired() {
     localStorage.removeItem("token");
-    sessionStorage.removeItem("session_id");
+    // sessionStorage.removeItem("session_id");
 
     displayError("Сессия истекла. Пожалуйста, войдите снова.");
 
@@ -16,12 +16,56 @@ export function handleTokenExpired() {
 }
 
 export function displayError(message) {
-    const errorContainer = document.createElement("div");
-    errorContainer.className = "global-error";
-    errorContainer.textContent = message;
+    showErrorPopup(message);
+}
 
-    const form = document.getElementById("authForm");
-    form.parentNode.insertBefore(errorContainer, form);
+export function showErrorPopup(message) {
+    const overlay = document.getElementById("errorPopupOverlay");
+    const messageElement = document.getElementById("errorPopupMessage");
+    const button = document.getElementById("errorPopupButton");
+
+    if (!overlay || !messageElement || !button) {
+        const errorContainer = document.createElement("div");
+        errorContainer.className = "global-error";
+        errorContainer.textContent = message;
+        const form = document.getElementById("authForm");
+        if (form) {
+            form.parentNode.insertBefore(errorContainer, form);
+        }
+        return;
+    }
+
+    messageElement.textContent = message;
+
+    overlay.classList.add("show");
+
+    const closePopup = () => {
+        overlay.classList.remove("show");
+        setTimeout(() => {
+            messageElement.textContent = "";
+        }, 300);
+    };
+
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
+
+    newButton.addEventListener("click", closePopup);
+
+    const overlayClickHandler = (e) => {
+        if (e.target === overlay) {
+            closePopup();
+            overlay.removeEventListener("click", overlayClickHandler);
+        }
+    };
+    overlay.addEventListener("click", overlayClickHandler);
+
+    const escapeHandler = (e) => {
+        if (e.key === "Escape") {
+            closePopup();
+            document.removeEventListener("keydown", escapeHandler);
+        }
+    };
+    document.addEventListener("keydown", escapeHandler);
 }
 
 export function displayValidationErrors(errors) {
