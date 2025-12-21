@@ -28,7 +28,12 @@ function addMessage(text, isUser) {
 }
 
 function removeMessage(message) {
-    chatMessages.removeChild(message);
+    if (message && message.parentNode === chatMessages) {
+        chatMessages.removeChild(message);
+    }
+    else if (message && message.parentNode) {
+        message.remove();
+    }
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
